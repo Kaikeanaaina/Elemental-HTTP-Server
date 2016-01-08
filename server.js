@@ -23,12 +23,21 @@ function whenSomeoneConnects(request,response){
 
     //this check to see if the request is post and directed correctly
     if(request.method==='POST' && request.url==='/elements'){
+      fs.readFile('./template.html', function(err,data){
+        var readableData=data.toString();
+        console.log(readableData);
+        var change = readableData.replace('|| elementName ||', body.elementName)
+                                 .replace('|| elementName ||', body.elementName)
+                                 .replace('|| elementSymbol ||', body.elementSymbol)
+                                 .replace('|| elementAtomicNumber ||', body.elementAtomicNumber)
+                                 .replace('|| elementDescription ||', body.elementDescription);
+        console.log(change);
 
-      fs.writeFile('./public/'+ body.elementName + '.html', JSON.stringify(body) , function(err,data){
-        if(err) throw err;
 
-      console.log('aloha');
 
+        fs.writeFile('./public/'+ body.elementName + '.html', JSON.stringify(body) , function(err,data){
+          console.log('hi');
+        });
       });
 
     //make a new file in the public/js/
