@@ -35,7 +35,7 @@ function whenSomeoneConnects(request,response){
 
 
 
-        fs.writeFile('./public/'+ body.elementName + '.html', JSON.stringify(body) , function(err,data){
+        fs.writeFile('./public/'+ body.elementName + '.html', change , function(err,data){
           console.log('hi');
         });
       });
