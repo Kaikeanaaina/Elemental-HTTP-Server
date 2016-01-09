@@ -4,48 +4,105 @@ var data = new Date();
 var fs = require('fs');
 var queryString = require('querystring');
 var server = http.createServer(whenSomeoneConnects);
+var indexCount = 1;
+var h3 = '<h3>These are '+ indexCount +'</h3>';
+var replacedData = null;
 
 function whenSomeoneConnects(request,response){
   //request is an object
-
   var body = null;
 
-  //this is a request
+  //to know what the body
   request.on('data',function(buffer){
     body = buffer.toString();
-    console.log(body);
     body = queryString.parse(body);
-    console.log(body);
-    console.log('==========');
   });
 
   request.on('end',function(){
 
     //this check to see if the request is post and directed correctly
     if(request.method==='POST' && request.url==='/elements'){
-      fs.readFile('./template.html', function(err,data){
-        var readableData=data.toString();
-        console.log(readableData);
-        var change = readableData.replace('|| elementName ||', body.elementName)
-                                 .replace('|| elementName ||', body.elementName)
-                                 .replace('|| elementSymbol ||', body.elementSymbol)
-                                 .replace('|| elementAtomicNumber ||', body.elementAtomicNumber)
-                                 .replace('|| elementDescription ||', body.elementDescription);
-        console.log(change);
+      if(body.hasOwnProperty('elementName')&&
+         body.hasOwnProperty('elementSymbol')&&
+         body.hasOwnProperty('elementAtomicNumber')&&
+         body.hasOwnProperty('elementDescription')) {
+        //this is when the template file is being used
+        fs.readFile('./template/template.html', function(err,data){
+          var readableData=data.toString();
+          //this is when i change the template
+          var change = readableData.replace('|| elementName ||', body.elementName)
+                                   .replace('|| elementName ||', body.elementName)
+                                   .replace('|| elementSymbol ||', body.elementSymbol)
+                                   .replace('|| elementAtomicNumber ||', body.elementAtomicNumber)
+                                   .replace('|| elementDescription ||', body.elementDescription);
 
+          //console.log(change);
+          //this is when the new file is created
 
+          fs.writeFile('./public/'+ body.elementName + '.html', change , function(err,data){
+            if(err) console.log (err);
+            //change the index.html
+            //console.log('1111111111111');
+            fs.readdir('./public/', function(err,file){
+              //file is an array
+              //console.log("22222222222222");
+              var elements = file.filter(filteredArray);
+              function filteredArray(element,index,array){
+                return element !== '404.html' && element !== 'css' && element !== 'index.html' && element !== 'js';
+              }
+              indexCount = elements.length;
 
-        fs.writeFile('./public/'+ body.elementName + '.html', change , function(err,data){
-          console.log('hi');
+              fs.readFile('./template/index.html', function(err,data){
+                //console.log('3333333333333');
+                var newData = data.toString();
+
+                if(elements.length ===2){
+                replacedData = newData.replace('<h3> These are '+ indexCount + ' </h3>', '<h3> These are ' + (indexCount+1) + ' </h3>' );
+                indexCount ++;
+                }
+                else{
+                replacedData = newData.replace('<h3> These are '+ indexCount + ' </h3>', '<h3> These are ' + (elements.length+1) + ' </h3>' );
+                indexCount ++;
+                }
+
+                //now to insert the new li elements
+                replacedData = replacedData.replace('</ol>', '  <li>\n      <a href="/'+ body.elementName + '.html">'+body.elementName.toLowerCase()+'</a>\n    </li>\n  </ol>');
+
+                fs.writeFile('./template/index.html', replacedData , function(err,data){
+                  //console.log('4444444444444');
+                  if(err){
+                    fs.readFile('./public/404.html', function (err, data) {
+                      if(err) throw err;
+                      response.write(data);
+                      return response.end();
+                    });
+                  } else {
+                    // console.log('555555555');
+                    var resBody = JSON.stringify({success : true});
+                    response.writeHead(200, {
+                      'Content-Length': resBody.length,
+                      'Content-Type': 'application/json'
+
+                    });
+
+                    response.end(resBody);
+                  }
+                });
+              });
+            });
+          });
         });
-      });
 
-    //make a new file in the public/js/
-    //the body will be the in the js
-    //
 
-      //this ends the request
-      response.end();
+
+        //this ends the request
+      } else{
+        fs.readFile('./public/404.html', function (err, data) {
+          if(err) throw err;
+          socketReq.write(data);
+          //return socketReq.end();
+        });
+      }
     }
   });
 }
