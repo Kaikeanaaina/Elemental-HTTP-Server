@@ -189,6 +189,27 @@ function whenSomeoneConnects ( request , response ){
       });
      }
 
+     else if(request.method === 'GET' ) {
+      if( request.url === '/'){
+        request.url = '/index.html';
+      }
+
+      if(request.url === '/index.html' ){
+        fs.readFile('./template'+request.url, function ( err , file ){
+          if ( err ) console.log ( err );
+          response.write(file.toString());
+          response.end();
+        });
+      } else {
+        fs.readFile('./public'+request.url, function ( err , file ){
+          if ( err ) console.log ( err );
+          response.write(file.toString());
+          response.end();
+        });
+
+      }
+
+     }
 
   });
 }
