@@ -21,22 +21,22 @@ function whenSomeoneConnects ( request , response ){
   request.on( 'end' , function ( ){
 
     //this check to see if the request is post and directed correctly
-    if( request.method === 'POST' && request.url === '/elements' )
+    if( request.method === 'POST' && request.url === '/elements' ){
       fs.readdir( './public/' , function ( err , file ) {
-        var putElements = file.filter( filteredArray );
-        function filteredArray( element , index , array ){
+        var postElements = file.filter( filteredPostArray );
+        function filteredPostArray( element , index , array ){
           return element !== '404.html' && element !== 'css' && element !== 'index.html' && element !== 'js';
         }
-         console.log( putElements );
-         console.log( putElements[1] );
+         console.log( postElements );
+         console.log( postElements[1] );
          console.log( body.elementName );
          console.log( body.elementName+'.html' );
-         console.log( putElements.indexOf( body.elementName + '.html' ));
+         console.log( postElements.indexOf( body.elementName + '.html' ));
 
-         console.log( putElements.indexOf( body.elementName + '.html' ) === -1 );
+         console.log( postElements.indexOf( body.elementName + '.html' ) === -1 );
 
 
-        if( putElements.indexOf( body.elementName + '.html' ) === -1 ){
+        if( postElements.indexOf( body.elementName + '.html' ) === -1 ){
           if( body.hasOwnProperty( 'elementName' )&&
              body.hasOwnProperty( 'elementSymbol' )&&
              body.hasOwnProperty( 'elementAtomicNumber' )&&
@@ -97,7 +97,6 @@ function whenSomeoneConnects ( request , response ){
                         response.writeHead(200, {
                           'Content-Length': resBody.length,
                           'Content-Type': 'application/json'
-
                         });
 
                         response.end(resBody);
@@ -122,16 +121,13 @@ function whenSomeoneConnects ( request , response ){
           return 'there is already an existing file by that name';
         }
       });
+    }
 
-
-
-
-
-     else if(request.method==='PUT' && request.url=== '/elements'){
+    else if(request.method==='PUT'){
         fs.readdir('./public/', function(err, file){
-        console.log('222222222222222222222');
-        var putElements = file.filter(filteredArray);
-        function filteredArray(element,index,array){
+        //console.log('222222222222222222222');
+        var putElements = file.filter(filteredPutArray);
+        function filteredPutArray(element,index,array){
           return element !== '404.html' && element !== 'css' && element !== 'index.html' && element !== 'js';
         }
          console.log(putElements);
@@ -187,13 +183,12 @@ function whenSomeoneConnects ( request , response ){
           return 'there is no element by that name';
         }
       });
-     }
+    }
 
-     else if(request.method === 'GET' ) {
+    else if(request.method === 'GET' ) {
       if( request.url === '/'){
         request.url = '/index.html';
       }
-
       if(request.url === '/index.html' ){
         fs.readFile('./template'+request.url, function ( err , file ){
           if ( err ) console.log ( err );
@@ -206,10 +201,27 @@ function whenSomeoneConnects ( request , response ){
           response.write(file.toString());
           response.end();
         });
-
       }
+    }
 
-     }
+    else if(request.method === 'DELETE' ) {
+      fs.readdir('./public/', function(err, file){
+        if ( err ) throw( err );
+
+          var deleteElements = file.filter(filteredDeleteArray);
+
+          function filteredDeleteArray(element,index,array){
+            return element !== '404.html' && element !== 'css' && element !== 'index.html' && element !== 'js';
+          }
+          console.log(body);
+          // if(deleteElements.indexOf(body.elementName+'.html')!==-1){
+          //   console.log( 'alohaaaaaaaaa' );
+            response.end();
+          // }
+
+
+      });
+    }
 
   });
 }
